@@ -10,6 +10,6 @@ Werkzeug==2.2.3
 pillow==9.4.0
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.0.0+cpu
-pytorch-lightning==2.0.1+cpu
+pytorch-lightning==2.0.1
 torchvision==0.15.1+cpu
 torchmetrics==0.11.4+cpu
