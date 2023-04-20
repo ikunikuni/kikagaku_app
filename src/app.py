@@ -8,8 +8,7 @@ import base64
 
 def predict(img):
     net = Net().cpu().eval()
-    net.load_state_dict(torch.load('./src/seibetsujudge_cpu.pt', map_location=torch.device('cpu')))
-
+    net.load_state_dict(torch.load('seibetsujudge_cpu.pt', map_location=torch.device('cpu')))
     img = transform(img)
     img = img.unsqueeze(0)
 
