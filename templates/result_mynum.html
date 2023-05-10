@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>性別・年齢確認アプリ</title>
+</head>
+<body>
+	{% if gender == 'male' %}
+        {% if age %}
+	    	<p>あなたは間違いなく男性で、年齢は{{ age }}歳です。</p>
+        {% else %}
+            <p>あなたは間違いなく男性ですが、年齢は確認できませんでした。</p>
+        {% endif %}
+    {% elif gender == 'female' %}
+        {% if age %}
+	    	<p>あなたは間違いなく女性で、年齢は{{ age }}歳です。</p>
+        {% else %}
+            <p>あなたは間違いなく女性ですが、年齢は確認できませんでした。</p>
+        {% endif %}
+    {% else %}
+    	<p>性別確認不可</p>
+    {% endif %}
+	<hr>
+	<a href="./">トップへ戻る</a>
+</body>
+</html>
