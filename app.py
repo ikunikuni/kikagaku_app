@@ -20,7 +20,7 @@ from mynum import detect_birthdate
 
 def predict(img):
     net = Net().cpu().eval()
-    net.load_state_dict(torch.load('seibetsujudge_cpu.pt', map_location=torch.device('cpu')))
+    net.load_state_dict(torch.load('seibetsujudge_cpu_4.pt', map_location=torch.device('cpu')))
 
     # リサイズ
     transform = transforms.Compose([
@@ -41,6 +41,8 @@ def getDanjyo(label):
 
 app = Flask(__name__)
 
+
+
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif', 'jpeg'])
 
 def allowed_file(filename):
@@ -54,7 +56,6 @@ def gen_frames():
 
         if not success:
             break
-
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
 
@@ -76,6 +77,7 @@ def home():
             #base64_str = base64.b64encode(buf.getvalue()).decode('UTF-8')
             #base64_data = 'data:image/png;base64,{}'.format(base64_str)
 
+    
         image_data_url = request.form['imageData'] #cam
         image_data = re.sub('^data:image/.+;base64,', '', image_data_url) #cam
         image = Image.open(BytesIO(base64.b64decode(image_data))) #cam
