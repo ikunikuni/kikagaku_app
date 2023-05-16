@@ -1,13 +1,14 @@
-<title>性別判定アプリ</title>
+<title>性別・年齢確認アプリ</title>
 
 {% if seibetsuDanjyo %}
-    <h1>AIによる判定の結果・・・</h1>
-    <h2>この方は {{ seibetsuDanjyo }} です！</h2>
+    <h1>判定結果</h1>
+    <h2>あなたはおそらく {{ seibetsuDanjyo }} です・・・</h2>
     <div>
-        <img src="{{ image }}">
+        <img src='{{ image }}''>
     </div>
-    <a href="./">トップへ戻る</a>
-{% else %}
-    <a href="./">トップへ戻る</a>
 {% endif %}
+
+<button onclick="location.href='./mynum'">マイナンバーカード読み込みページへ移動</button>
+
+
 

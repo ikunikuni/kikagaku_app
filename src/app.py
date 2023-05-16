@@ -4,58 +4,141 @@ from flask import Flask, request, render_template, redirect
 import io
 from PIL import Image
 import base64
-
+import cv2
+from flask import Response
+from torchvision import transforms
+import pytesseract
+from io import BytesIO
+import pyocr
+import re
+import datetime
+import easyocr
+import numpy as np
+import pytesseract
+from mynum import detect_gender
+from mynum import detect_birthdate
 
 def predict(img):
     net = Net().cpu().eval()
-    net.load_state_dict(torch.load('seibetsujudge_cpu.pt', map_location=torch.device('cpu')))
+    net.load_state_dict(torch.load('seibetsujudge_cpu_4.pt', map_location=torch.device('cpu')))
+
+    # リサイズ
+    transform = transforms.Compose([
+        transforms.Resize(size=(100, 100)),
+        transforms.ToTensor(),
+    ])
     img = transform(img)
     img = img.unsqueeze(0)
 
     y = torch.argmax(net(img), dim=1).cpu().detach().numpy()
     return y
 
-
 def getDanjyo(label):
     if label == 0:
         return '女性'
-    elif label ==1:
+    elif label == 1:
         return '男性'
-    
 
 app = Flask(__name__)
 
+
+
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif', 'jpeg'])
 
-def allwed_file(filename):
+def allowed_file(filename):
     return ('.') in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods = ['GET', 'POST'])
-def predicts():
+def gen_frames():
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        success, frame = cap.read()
+
+        if not success:
+            break
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+    cap.release()
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
     if request.method == 'POST':
-        if 'filename' not in request.files:
-            return redirect(request.url)
-        file = request.files['filename']
-        if file and allwed_file(file.filename):
-
-            buf = io.BytesIO()
-            image = Image.open(file)
-            image.save(buf, 'png')
-            base64_str = base64.b64encode(buf.getvalue()).decode('UTF-8')
-            base64_data = 'data:image/png;base64,{}'.format(base64_str)
-
-            pred = predict(image)
-            seibetsuDanjyo_ = getDanjyo(pred)
-            return render_template('result.html', seibetsuDanjyo=seibetsuDanjyo_, image=base64_data)
-        return redirect(request.url)
+        #if 'filename' not in request.files:
+            #return redirect(request.url)
+        #file = request.files['filename']
+        #if file and allowed_file(file.filename):
+            #buf = io.BytesIO()
+            #image = Image.open(file)
+            #image.save(buf, 'png')
+            #base64_str = base64.b64encode(buf.getvalue()).decode('UTF-8')
+            #base64_data = 'data:image/png;base64,{}'.format(base64_str)
 
     
+        image_data_url = request.form['imageData'] #cam
+        image_data = re.sub('^data:image/.+;base64,', '', image_data_url) #cam
+        image = Image.open(BytesIO(base64.b64decode(image_data))) #cam
+
+        pred = predict(image)
+        seibetsuDanjyo_ = getDanjyo(pred)
+        #return render_template('result.html', seibetsuDanjyo=seibetsuDanjyo_, image=base64_data)
+        return render_template('result.html', seibetsuDanjyo=seibetsuDanjyo_, image=image_data_url) #cam
+        #return redirect(request.url)
+
     elif request.method == 'GET':
-        return render_template('index.html')
+        return render_template('webcam.html')
+        #return render_template('index.html')
     
+#######################################################################################################
 
-if __name__== '__main__':
+
+# OCRツールの初期化
+reader = easyocr.Reader(['ja'])
+tools = pyocr.get_available_tools()
+tool = tools[0]
+
+@app.route('/mynum', methods=['GET', 'POST'])
+def mynum():
+    if request.method == 'POST':
+        # リクエストから画像ファイルを取得
+        img_file = request.files['filename2']
+        # OpenCVを使用して画像を読み込む
+        img_bytes = img_file.read()
+        img_np = np.frombuffer(img_bytes, np.uint8)
+        img_gen = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
+
+        # EasyOCRを使用して性別を抽出
+        img_gray = cv2.cvtColor(img_gen, cv2.COLOR_BGR2GRAY)
+        #result_gender = reader.readtext(img_gray)
+        txt_gender = reader.readtext(img_gray)
+        #txt_gender = result_gender[6][1]
+
+        #print(result_gender)
+        #print(txt_gender)
+
+
+        gender = detect_gender(txt_gender)
+
+        # PyOCRを使用して生年月日を抽出
+        img_pil = Image.open(io.BytesIO(img_bytes))
+        img_pil = img_pil.convert('L')
+        txt_age = tool.image_to_string(img_pil, lang='jpn+eng', builder=pyocr.builders.TextBuilder(tesseract_layout=6))
+
+        age = detect_birthdate(txt_age)
+
+        # 結果をレンダリングするテンプレートに渡してレスポンスを返す
+        return render_template('result_mynum.html', gender=gender, age=age)
+    else:
+        return render_template('mynum.html')
+
+
+
+
+
+
+
+if __name__ == '__main__':
     app.run(debug=True)
-
-
-

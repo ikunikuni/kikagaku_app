@@ -1,0 +1,15 @@
+/* ページ内のすべての要素に対して、余白を0に設定する */
+* {
+    margin: 0;
+  }
+  
+  /* id="capture"の要素に対して、背景色を青色に設定する */
+  #capture {
+    background-color: blue;
+  }
+  
+  /* id="photo"の要素に対して、幅を100%に設定する */
+  #photo {
+    width: 100%;
+  }
+  
