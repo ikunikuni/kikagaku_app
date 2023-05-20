@@ -14,7 +14,6 @@ import re
 import datetime
 import easyocr
 import numpy as np
-import pytesseract
 from mynum import detect_gender
 from mynum import detect_birthdate
 import os
@@ -29,6 +28,8 @@ def predict(img):
         transforms.Resize(size=(100, 100)),
         transforms.ToTensor(),
     ])
+
+
     img = transform(img)
     img = img.unsqueeze(0)
 
