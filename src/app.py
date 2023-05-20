@@ -19,17 +19,17 @@ from mynum import detect_birthdate
 import os
 from flask import url_for
 
-def predict(img):
-    net = Net().cpu().eval()
-    net.load_state_dict(torch.load('seibetsujudge_cpu_4.pt', map_location=torch.device('cpu')))
+
+net = Net().cpu().eval()
+net.load_state_dict(torch.load('seibetsujudge_cpu_4.pt', map_location=torch.device('cpu')))
 
     # リサイズ
-    transform = transforms.Compose([
+transform = transforms.Compose([
         transforms.Resize(size=(100, 100)),
         transforms.ToTensor(),
-    ])
+])
 
-
+def predict(img):
     img = transform(img)
     img = img.unsqueeze(0)
 
@@ -78,30 +78,18 @@ def video_feed():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-        #if 'filename' not in request.files:
-            #return redirect(request.url)
-        #file = request.files['filename']
-        #if file and allowed_file(file.filename):
-            #buf = io.BytesIO()
-            #image = Image.open(file)
-            #image.save(buf, 'png')
-            #base64_str = base64.b64encode(buf.getvalue()).decode('UTF-8')
-            #base64_data = 'data:image/png;base64,{}'.format(base64_str)
 
-    
         image_data_url = request.form['imageData'] #cam
         image_data = re.sub('^data:image/.+;base64,', '', image_data_url) #cam
         image = Image.open(BytesIO(base64.b64decode(image_data))) #cam
 
         pred = predict(image)
         seibetsuDanjyo_ = getDanjyo(pred)
-        #return render_template('result.html', seibetsuDanjyo=seibetsuDanjyo_, image=base64_data)
         return render_template('result.html', seibetsuDanjyo=seibetsuDanjyo_, image=image_data_url) #cam
-        #return redirect(request.url)
 
     elif request.method == 'GET':
         return render_template('webcam.html')
-        #return render_template('index.html')
+
     
 #######################################################################################################
 
@@ -123,12 +111,8 @@ def mynum():
 
         # EasyOCRを使用して性別を抽出
         img_gray = cv2.cvtColor(img_gen, cv2.COLOR_BGR2GRAY)
-        #result_gender = reader.readtext(img_gray)
         txt_gender = reader.readtext(img_gray)
-        #txt_gender = result_gender[6][1]
 
-        #print(result_gender)
-        #print(txt_gender)
 
 
         gender = detect_gender(txt_gender)
