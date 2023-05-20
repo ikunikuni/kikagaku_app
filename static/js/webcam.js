@@ -2,7 +2,7 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const captureButton = document.getElementById('capture');
 const imageDataInput = document.getElementById('imageData');
-const form = document.getElementById('myForm');
+
 
 const constraints = {
   video: true

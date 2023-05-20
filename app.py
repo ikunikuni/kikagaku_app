@@ -18,6 +18,7 @@ import pytesseract
 from mynum import detect_gender
 from mynum import detect_birthdate
 import os
+from flask import url_for
 
 def predict(img):
     net = Net().cpu().eval()
@@ -42,57 +43,35 @@ def getDanjyo(label):
 
 app = Flask(__name__)
 
-
-
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif', 'jpeg'])
-
-def allowed_file(filename):
-    return ('.') in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def gen_frames():
-    
-    cap = cv2.VideoCapture(0)
-    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml') #f
-    
-
+def gen(camera): #f
     while True:
-        #success, frame = cap.read()
-
-        #if not success:
-            #break
-
-        # フレームの読み込み
-        ret, frame = cap.read()
-
-        # 顔の検出
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5) #f
-        
-
-        # 顔を赤枠で囲む
-        for (x, y, w, h) in faces: #f
-            
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
-        cv2.imshow('face detection', frame)
-
-        
-
-
-
-        ret, buffer = cv2.imencode('.jpg', frame)
-        #frame = buffer.tobytes()
-        frame_bytes = buffer.tobytes()
-
-        
-        
-        
-
+        frame = camera.get_frame()
         yield (b'--frame\r\n'
-               #b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-    cap.release()
+@app.route('/video_feed') #f
+def video_feed():
+    return Response(gen.get_frame(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+
+#ALLOWED_EXTENSIONS = set(['png', 'jpg', 'gif', 'jpeg'])
+
+#def allowed_file(filename):
+    #return ('.') in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+        #ret, buffer = cv2.imencode('.jpg', frame) #?
+        #frame = buffer.tobytes() #?
+        #frame_bytes = buffer.tobytes() #?
+
+        #yield (b'--frame\r\n' #?
+               #b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n') #?
+               #b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n') #?
+
+    #cap.release()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -167,9 +146,8 @@ def mynum():
 
 
 
-
-
-
-
 if __name__ == '__main__':
     app.run(debug=True)
+
+#if __name__ == '__main__':
+    #app.run(host='0.0.0.0', debug=True)
