@@ -19,17 +19,17 @@ from mynum import detect_birthdate
 import os
 from flask import url_for
 
-
-net = Net().cpu().eval()
-net.load_state_dict(torch.load('seibetsujudge_cpu_4.pt', map_location=torch.device('cpu')))
+def predict(img):
+    net = Net().cpu().eval()
+    net.load_state_dict(torch.load('seibetsujudge_cpu_4.pt', map_location=torch.device('cpu')))
 
     # リサイズ
-transform = transforms.Compose([
+    transform = transforms.Compose([
         transforms.Resize(size=(100, 100)),
         transforms.ToTensor(),
-])
+    ])
 
-def predict(img):
+
     img = transform(img)
     img = img.unsqueeze(0)
 
