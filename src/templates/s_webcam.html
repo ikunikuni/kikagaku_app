@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>性別判定アプリ</title>
+  </head>
+  <body>
+    <h1>性別判定アプリ＋セグメンテーションテスト中</h1>
+    <p>顔の撮影を開始します。撮影ボタンをクリックしてください。</p>
+    <video id='video' width='640' height='480' autoplay></video>
+    
+    <canvas id='canvas' width='640' height='480'></canvas>
+    <button id='capture'>撮影ボタン</button>
+    <form method="POST" action="/">
+      <input type="hidden" name="imageData" id="imageData">
+      <p><input type="submit" value="AI判定"></p>
+    </form>
+    <script src="{{ url_for('static', filename='js/s_webcam.js') }}"></script>
+  </body>
+</html>

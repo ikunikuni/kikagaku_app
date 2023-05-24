@@ -12,27 +12,25 @@ def detect_faces(frame):
 
     return frame
 
-def main():
-    cap = cv2.VideoCapture(0)
-
-    while True:
-        ret, frame = cap.read()
-
-        if not ret:
-            break
-
-        frame = detect_faces(frame)
-
-        cv2.imshow('Face Detection', frame)
-
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-    cap.release()
+class VideoCamera(object):
+    def __init__(self):
+        self.video = cv2.VideoCapture(0)
 
 
-    ret, frame = cv2.imencode('.jpg', frame)
-    return frame.tobytes()
+    def __del__(self):
+        self.video.release()
 
-if __name__ == '__main__':
-    main()
+    #def get_frame(self):
+        #success, f_image = self.video.read()
+        #ret, jpeg = cv2.imencode('.jpg', f_image)
+        #return jpeg.tobytes()
+    
+    def get_frame(self):
+        success, frame = self.video.read()
+        if success:
+            frame_with_faces = detect_faces(frame)
+            ret, jpeg = cv2.imencode('.jpg', frame_with_faces)
+            return jpeg.tobytes()
+        else:
+            return None
+

@@ -7,17 +7,21 @@ import base64
 import cv2
 from flask import Response
 from torchvision import transforms
-import pytesseract
+#import pytesseract
 from io import BytesIO
-import pyocr
+#import pyocr
 import re
 import datetime
-import easyocr
+#import easyocr
 import numpy as np
 from mynum import detect_gender
 from mynum import detect_birthdate
 import os
 from flask import url_for
+from webcam import VideoCamera
+from segm import perform_segmentation
+from segm import convert_image_data
+
 
 def predict(img):
     net = Net().cpu().eval()
@@ -44,15 +48,34 @@ def getDanjyo(label):
 
 app = Flask(__name__)
 
+
+
+#def gen_frames():
+    #while True:
+        #frame = cv2.get_frame()
+        #yield (b'--frame\r\n'
+               #b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+        
+
+        
+#def gen_frames(camera):
+    # カメラからフレームを取得するコード
+    #frame = camera.get_frame()
+    #yield (b'--frame\r\n'
+           #b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
 def gen(camera): #f
     while True:
         frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+        if frame is not None:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-@app.route('/video_feed') #f
+@app.route('/video_feed')
 def video_feed():
-    return Response(gen.get_frame(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
 
 
 
@@ -74,11 +97,33 @@ def video_feed():
 
     #cap.release()
 
+# 画像セグメンテーションのエンドポイント
+@app.route('/segment', methods=['POST'])
+def segment_image():
+    # リクエストから画像データを取得
+    s_image_data = request.form['imageData']
+    
+    # 画像データを復元しセグメンテーション処理を実行
+    s_image = convert_image_data(s_image_data)
+    segmented_image = perform_segmentation(s_image)
+    
+    # セグメンテーション結果をJSON形式でレスポンス
+    return {'segmented_image': segmented_image}
+
+
+
+# セグメンテーション後のデータを受け取るエンドポイント
+@app.route('/result', methods=['POST'])
+def receive_segmented_data():
+    segmented_data = request.json['result']
+    
+    return 'imageData'
+
+
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
-
         image_data_url = request.form['imageData'] #cam
         image_data = re.sub('^data:image/.+;base64,', '', image_data_url) #cam
         image = Image.open(BytesIO(base64.b64decode(image_data))) #cam
@@ -88,6 +133,8 @@ def home():
         return render_template('result.html', seibetsuDanjyo=seibetsuDanjyo_, image=image_data_url) #cam
 
     elif request.method == 'GET':
+        #return render_template('f_webcam.html')
+        #return render_template('s_webcam.html')
         return render_template('webcam.html')
 
     
@@ -95,39 +142,39 @@ def home():
 
 
 # OCRツールの初期化
-reader = easyocr.Reader(['ja'])
-tools = pyocr.get_available_tools()
-tool = tools[0]
+#reader = easyocr.Reader(['ja'])
+#tools = pyocr.get_available_tools()
+#tool = tools[0]
 
-@app.route('/mynum', methods=['GET', 'POST'])
-def mynum():
-    if request.method == 'POST':
+#@app.route('/mynum', methods=['GET', 'POST'])
+#def mynum():
+    #if request.method == 'POST':
         # リクエストから画像ファイルを取得
-        img_file = request.files['filename2']
+        #img_file = request.files['filename2']
         # OpenCVを使用して画像を読み込む
-        img_bytes = img_file.read()
-        img_np = np.frombuffer(img_bytes, np.uint8)
-        img_gen = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
+        #img_bytes = img_file.read()
+        #img_np = np.frombuffer(img_bytes, np.uint8)
+        #img_gen = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
 
         # EasyOCRを使用して性別を抽出
-        img_gray = cv2.cvtColor(img_gen, cv2.COLOR_BGR2GRAY)
-        txt_gender = reader.readtext(img_gray)
+        #img_gray = cv2.cvtColor(img_gen, cv2.COLOR_BGR2GRAY)
+        #txt_gender = reader.readtext(img_gray)
 
 
 
-        gender = detect_gender(txt_gender)
+        #gender = detect_gender(txt_gender)
 
         # PyOCRを使用して生年月日を抽出
-        img_pil = Image.open(io.BytesIO(img_bytes))
-        img_pil = img_pil.convert('L')
-        txt_age = tool.image_to_string(img_pil, lang='jpn+eng', builder=pyocr.builders.TextBuilder(tesseract_layout=6))
+        #img_pil = Image.open(io.BytesIO(img_bytes))
+        #img_pil = img_pil.convert('L')
+        #txt_age = tool.image_to_string(img_pil, lang='jpn+eng', builder=pyocr.builders.TextBuilder(tesseract_layout=6))
 
-        age = detect_birthdate(txt_age)
+        #age = detect_birthdate(txt_age)
 
         # 結果をレンダリングするテンプレートに渡してレスポンスを返す
-        return render_template('result_mynum.html', gender=gender, age=age)
-    else:
-        return render_template('mynum.html')
+        #return render_template('result_mynum.html', gender=gender, age=age)
+    #else:
+        #return render_template('mynum.html')
 
 
 
