@@ -4,7 +4,7 @@ from flask import Flask, request, render_template, redirect
 import io
 from PIL import Image
 import base64
-import cv2
+#import cv2
 from flask import Response
 from torchvision import transforms
 #import pytesseract
