@@ -11,16 +11,16 @@ from torchvision import transforms
 from io import BytesIO
 #import pyocr
 import re
-import datetime
+#import datetime
 #import easyocr
-import numpy as np
-from mynum import detect_gender
-from mynum import detect_birthdate
-import os
+#import numpy as np
+#from mynum import detect_gender
+#from mynum import detect_birthdate
+#import os
 from flask import url_for
-from webcam import VideoCamera
-from segm import perform_segmentation
-from segm import convert_image_data
+#from webcam import VideoCamera
+#from segm import perform_segmentation
+#from segm import convert_image_data
 
 
 def predict(img):
@@ -71,9 +71,9 @@ def gen(camera): #f
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+#@app.route('/video_feed')
+#def video_feed():
+    #return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 
@@ -98,17 +98,17 @@ def video_feed():
     #cap.release()
 
 # 画像セグメンテーションのエンドポイント
-@app.route('/segment', methods=['POST'])
-def segment_image():
+#@app.route('/segment', methods=['POST'])
+#def segment_image():
     # リクエストから画像データを取得
-    s_image_data = request.form['imageData']
+    #s_image_data = request.form['imageData']
     
     # 画像データを復元しセグメンテーション処理を実行
-    s_image = convert_image_data(s_image_data)
-    segmented_image = perform_segmentation(s_image)
+    #s_image = convert_image_data(s_image_data)
+    #segmented_image = perform_segmentation(s_image)
     
     # セグメンテーション結果をJSON形式でレスポンス
-    return {'segmented_image': segmented_image}
+    #return {'segmented_image': segmented_image}
 
 
 
