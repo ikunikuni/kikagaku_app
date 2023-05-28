@@ -8,14 +8,12 @@
     <h1>性別・年齢確認アプリ</h1>
     <p>顔の撮影を開始します。撮影ボタンをクリックしてください。</p>
     <video id='video' width='640' height='480' autoplay></video>
-    
     <canvas id='canvas' width='640' height='480'></canvas>
     <button id='capture'>撮影ボタン</button>
     <form method="POST" action="/">
       <input type="hidden" name="imageData" id="imageData">
       <p><input type="submit" value="AI判定"></p>
     </form>
-    <!--<script type="text/javascript" src="{{ url_for('static', filename='js/webcam.js') }}"></script>-->
     <script src="{{ url_for('static', filename='js/webcam.js') }}"></script>
   </body>
 </html>
